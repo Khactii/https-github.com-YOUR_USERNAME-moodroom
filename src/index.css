@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #15120e;
+  --surf: #1e1a13;
+  --surf2: #262017;
+  --cream: #f2ead9;
+  --mut: rgba(242, 234, 217, 0.58);
+  --faint: rgba(242, 234, 217, 0.32);
+  --acc: #ff5436;
+  --acc-soft: rgba(255, 84, 54, 0.1);
+  --line: rgba(242, 234, 217, 0.12);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--cream);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Mono kickers: uppercase, wide tracking. */
+.kicker {
+  font-family: 'Space Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.6875rem;
+}
+
+.stat-num {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.mono {
+  font-family: 'Space Mono', monospace;
+}
+
+/* Hide scrollbars on the phone frame for a cleaner demo. */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
