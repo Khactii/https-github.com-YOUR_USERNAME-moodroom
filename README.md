@@ -41,9 +41,10 @@ src/
   storage/       # localStorage persistence boundary (swap for an API later)
   state/         # React store wiring engine + storage to the UI
   data/          # ~12 seeded mock users + feed so social feels alive day one
-  components/    # shared UI: cards, flame, tab bar, integrity hook, count-up
-  screens/       # Onboarding, Home, ActiveSession, SessionComplete,
-                 #   Profile, Feed, Leaderboard
+  components/    # shared UI: cards, flame, tab bar, integrity hook,
+                 #   count-up, Atlas nudge, exportable story card
+  screens/       # Onboarding, Home, ActiveSession, SessionComplete, Profile,
+                 #   Feed, Leaderboard, FocusCircle, BossBattle, Paywall
 ```
 
 ### The rules (see `src/engine/constants.ts`)
@@ -80,9 +81,14 @@ Leaderboard · Profile), the consistency-weighted weekly **Leaderboard** with
 Global / Circle tabs and the user's own row highlighted in accent, and the
 **Feed** of public sessions as social proof.
 
+**Phase 3 (depth & flex) is complete:** the **Focus Circle** crew screen with a
+mini leaderboard, an engine-computed **achievements** grid on Profile, an
+**exportable story card** (PNG via html-to-image), a 1v1 **boss battle** (two
+timers racing), a stubbed **Atlas** coach nudge, and a stubbed **Pro paywall**
+(UI only — nothing is gated).
+
 Stubbed throughout (per spec): payments / Pro, real auth, real binaural audio,
-the Atlas AI coach, push notifications. Phase 3 (Focus Circle, badges,
-story-card export, boss battle, paywall UI) is scoped but not yet built.
+the Atlas AI coach, push notifications. All three build phases are now in.
 
 ### Demo tips
 

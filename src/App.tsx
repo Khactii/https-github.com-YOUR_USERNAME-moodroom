@@ -7,6 +7,9 @@ import { SessionComplete, type RewardResult } from './screens/SessionComplete';
 import { Profile } from './screens/Profile';
 import { Feed } from './screens/Feed';
 import { Leaderboard } from './screens/Leaderboard';
+import { FocusCircle } from './screens/FocusCircle';
+import { BossBattle } from './screens/BossBattle';
+import { Paywall } from './screens/Paywall';
 import { TabBar } from './components/TabBar';
 import type { FinishSessionArgs } from './state/store';
 import type { SessionConfig, Tab, View } from './types';
@@ -35,22 +38,27 @@ function Shell() {
     setView('complete');
   };
 
-  // Full-screen flow views hide the tab bar.
+  // Full-screen flow & flex views hide the tab bar (each has its own back affordance).
   if (view === 'active') {
     return cfg ? <ActiveSession cfg={cfg} onFinish={finish} onAbort={() => setView('home')} /> : null;
   }
   if (view === 'complete') {
     return result ? <SessionComplete result={result} onDone={() => setView('home')} /> : null;
   }
+  if (view === 'circle') return <FocusCircle onBack={() => setView('home')} onBoss={() => setView('boss')} />;
+  if (view === 'boss') return <BossBattle onBack={() => setView('circle')} />;
+  if (view === 'paywall') return <Paywall onBack={() => setView('profile')} />;
 
   const tab = view as Tab;
   return (
     <>
       <div className="min-h-full">
-        {tab === 'home' && <Home onLockIn={lockIn} onProfile={() => setView('profile')} />}
+        {tab === 'home' && <Home onLockIn={lockIn} onProfile={() => setView('profile')} onCircle={() => setView('circle')} />}
         {tab === 'feed' && <Feed />}
         {tab === 'leaderboard' && <Leaderboard />}
-        {tab === 'profile' && <Profile onBack={() => setView('home')} />}
+        {tab === 'profile' && (
+          <Profile onBack={() => setView('home')} onCircle={() => setView('circle')} onPro={() => setView('paywall')} />
+        )}
       </div>
       <TabBar active={TABS.includes(tab) ? tab : 'home'} onChange={(t) => setView(t)} />
     </>

@@ -6,3 +6,4 @@ export * from './streak';
 export * from './level';
 export * from './leaderboard';
 export * from './session';
+export * from './achievements';

@@ -1,10 +1,20 @@
-import { ArrowLeft, Award, Flame, RotateCcw, Trophy } from 'lucide-react';
+import { useState } from 'react';
+import {
+  ArrowLeft, Crown, Flame, Lock, Moon, Mountain, RotateCcw, Share2, Shield, Sparkles, Sunrise, Timer, Trophy,
+  type LucideIcon,
+} from 'lucide-react';
 import { Avatar, Button, Card, Kicker } from '../components/ui';
+import { StoryCard } from '../components/StoryCard';
 import { useStore } from '../state/store';
-import { LEVEL_ORDER, levelProgress, levelThresholds } from '../engine';
+import { evaluateAchievements, LEVEL_ORDER, levelProgress, levelThresholds } from '../engine';
 
-export function Profile({ onBack }: { onBack: () => void }) {
+const ACH_ICONS: Record<string, LucideIcon> = {
+  Lock, Timer, Flame, Shield, Sunrise, Moon, Mountain, Crown,
+};
+
+export function Profile({ onBack, onCircle, onPro }: { onBack: () => void; onCircle: () => void; onPro: () => void }) {
   const { me, myRank, sessions, resetAll } = useStore();
+  const [showStory, setShowStory] = useState(false);
   if (!me) return null;
 
   const myVerifiedMin = sessions
@@ -13,6 +23,8 @@ export function Profile({ onBack }: { onBack: () => void }) {
   const totalHours = (myVerifiedMin / 60).toFixed(1);
   const progress = levelProgress(me.totalXP);
   const thresholds = levelThresholds();
+  const achievements = evaluateAchievements(me, sessions);
+  const earnedCount = achievements.filter((a) => a.earned).length;
 
   const stats = [
     { label: 'Total hours', value: totalHours, icon: null },
@@ -35,15 +47,24 @@ export function Profile({ onBack }: { onBack: () => void }) {
       {/* Identity */}
       <div className="mt-4 flex items-center gap-4">
         <Avatar initial={me.initial} size={64} accent />
-        <div>
+        <div className="min-w-0">
           <div className="font-grotesk text-2xl font-bold leading-tight">@{me.username}</div>
           <div className="kicker mt-0.5 text-acc">{me.level}</div>
           <p className="mt-1 text-sm text-mut">{me.bio}</p>
         </div>
       </div>
 
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Button variant="outline" onClick={() => setShowStory(true)} className="py-3 text-sm">
+          <Share2 size={16} /> Share story
+        </Button>
+        <Button variant="outline" onClick={onPro} className="py-3 text-sm">
+          <Sparkles size={16} className="text-acc" /> Go Pro
+        </Button>
+      </div>
+
       {/* Stats grid */}
-      <div className="mt-6 grid grid-cols-2 gap-3">
+      <div className="mt-3 grid grid-cols-2 gap-3">
         {stats.map((s) => (
           <Card key={s.label} className="p-4">
             <div className="kicker flex items-center gap-1.5 text-faint">
@@ -65,6 +86,36 @@ export function Profile({ onBack }: { onBack: () => void }) {
           <div className="h-full rounded-full bg-acc" style={{ width: `${progress.pct * 100}%` }} />
         </div>
       </Card>
+
+      {/* Achievements */}
+      <div className="mt-7">
+        <div className="flex items-baseline justify-between">
+          <Kicker>Achievements</Kicker>
+          <span className="mono text-xs text-faint">{earnedCount}/{achievements.length}</span>
+        </div>
+        <div className="mt-3 grid grid-cols-4 gap-2.5">
+          {achievements.map(({ def, earned, progress: p }) => {
+            const Icon = ACH_ICONS[def.icon] ?? Trophy;
+            return (
+              <div
+                key={def.id}
+                title={`${def.name} — ${def.desc}`}
+                className={`flex flex-col items-center gap-1.5 rounded-xl border p-2.5 text-center ${
+                  earned ? 'border-acc/40 bg-acc-soft' : 'border-line bg-surf'
+                }`}
+              >
+                <Icon size={20} className={earned ? 'text-acc' : 'text-faint'} />
+                <span className={`text-[10px] leading-tight ${earned ? 'text-cream' : 'text-faint'}`}>{def.name}</span>
+                {!earned && p > 0 && (
+                  <div className="h-1 w-full overflow-hidden rounded-full bg-ink">
+                    <div className="h-full rounded-full bg-mut" style={{ width: `${p * 100}%` }} />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Rank ladder */}
       <div className="mt-7">
@@ -88,27 +139,13 @@ export function Profile({ onBack }: { onBack: () => void }) {
         </div>
       </div>
 
-      {/* Badges */}
-      <div className="mt-7">
-        <Kicker>Badges</Kicker>
-        {me.badges.length ? (
-          <div className="mt-3 flex flex-wrap gap-2">
-            {me.badges.map((b) => (
-              <span key={b} className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surf px-3 py-1.5 text-sm text-cream">
-                <Award size={14} className="text-acc" /> {b}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <p className="mt-2 text-sm text-faint">No badges yet. Finish a 7-day streak to earn your first flame.</p>
-        )}
-      </div>
-
       <div className="mt-auto pt-7">
-        <Button full variant="outline" onClick={onBack} className="py-4">
-          Back to Home
+        <Button full variant="outline" onClick={onCircle} className="py-4">
+          View your Focus Circle
         </Button>
       </div>
+
+      {showStory && <StoryCard me={me} rank={myRank} totalHours={totalHours} onClose={() => setShowStory(false)} />}
     </div>
   );
 }

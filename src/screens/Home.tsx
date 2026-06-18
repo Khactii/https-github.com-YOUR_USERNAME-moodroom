@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Lock, Trophy, Waves } from 'lucide-react';
+import { ChevronRight, Lock, Trophy, Users, Waves } from 'lucide-react';
 import { Avatar, Button, Card, Kicker } from '../components/ui';
 import { StreakFlame } from '../components/Flame';
+import { AtlasNudge } from '../components/AtlasNudge';
 import { useStore } from '../state/store';
 import { DEV_MODE, levelProgress } from '../engine';
 import type { SessionConfig } from '../types';
@@ -9,8 +10,16 @@ import type { SessionConfig } from '../types';
 const DURATIONS = [25, 50, 90];
 const VIBES = ['Deep Focus', 'Rain', 'Lo-fi Hum', 'Silence'];
 
-export function Home({ onLockIn, onProfile }: { onLockIn: (cfg: SessionConfig) => void; onProfile: () => void }) {
-  const { me, myRank, todayXP, simulateMissedDay } = useStore();
+export function Home({
+  onLockIn,
+  onProfile,
+  onCircle,
+}: {
+  onLockIn: (cfg: SessionConfig) => void;
+  onProfile: () => void;
+  onCircle: () => void;
+}) {
+  const { me, myRank, todayXP, circleName, circleRanked, simulateMissedDay } = useStore();
   const [intention, setIntention] = useState('');
   const [duration, setDuration] = useState(50);
   const [custom, setCustom] = useState('');
@@ -63,6 +72,25 @@ export function Home({ onLockIn, onProfile }: { onLockIn: (cfg: SessionConfig) =
           </div>
         )}
       </Card>
+
+      {/* Atlas coach nudge (stubbed) */}
+      <AtlasNudge me={me} />
+
+      {/* Focus Circle entry */}
+      <button onClick={onCircle} className="mt-3 w-full text-left">
+        <Card className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-acc-soft">
+              <Users size={17} className="text-acc" />
+            </div>
+            <div>
+              <div className="font-grotesk font-semibold">{circleName}</div>
+              <div className="kicker text-faint">{circleRanked.length} members · locking in</div>
+            </div>
+          </div>
+          <ChevronRight size={18} className="text-faint" />
+        </Card>
+      </button>
 
       {/* The launchpad */}
       <div className="mt-7">
