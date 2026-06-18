@@ -5,8 +5,13 @@ import { Home } from './screens/Home';
 import { ActiveSession } from './screens/ActiveSession';
 import { SessionComplete, type RewardResult } from './screens/SessionComplete';
 import { Profile } from './screens/Profile';
+import { Feed } from './screens/Feed';
+import { Leaderboard } from './screens/Leaderboard';
+import { TabBar } from './components/TabBar';
 import type { FinishSessionArgs } from './state/store';
-import type { SessionConfig, View } from './types';
+import type { SessionConfig, Tab, View } from './types';
+
+const TABS: Tab[] = ['home', 'feed', 'leaderboard', 'profile'];
 
 function Shell() {
   const { ready, onboarded, finishSession } = useStore();
@@ -26,22 +31,30 @@ function Shell() {
   };
 
   const finish = (args: FinishSessionArgs) => {
-    const res = finishSession(args);
-    setResult(res);
+    setResult(finishSession(args));
     setView('complete');
   };
 
-  switch (view) {
-    case 'active':
-      return cfg ? <ActiveSession cfg={cfg} onFinish={finish} onAbort={() => setView('home')} /> : <Home onLockIn={lockIn} onProfile={() => setView('profile')} />;
-    case 'complete':
-      return result ? <SessionComplete result={result} onDone={() => setView('home')} /> : <Home onLockIn={lockIn} onProfile={() => setView('profile')} />;
-    case 'profile':
-      return <Profile onBack={() => setView('home')} />;
-    case 'home':
-    default:
-      return <Home onLockIn={lockIn} onProfile={() => setView('profile')} />;
+  // Full-screen flow views hide the tab bar.
+  if (view === 'active') {
+    return cfg ? <ActiveSession cfg={cfg} onFinish={finish} onAbort={() => setView('home')} /> : null;
   }
+  if (view === 'complete') {
+    return result ? <SessionComplete result={result} onDone={() => setView('home')} /> : null;
+  }
+
+  const tab = view as Tab;
+  return (
+    <>
+      <div className="min-h-full">
+        {tab === 'home' && <Home onLockIn={lockIn} onProfile={() => setView('profile')} />}
+        {tab === 'feed' && <Feed />}
+        {tab === 'leaderboard' && <Leaderboard />}
+        {tab === 'profile' && <Profile onBack={() => setView('home')} />}
+      </div>
+      <TabBar active={TABS.includes(tab) ? tab : 'home'} onChange={(t) => setView(t)} />
+    </>
+  );
 }
 
 export default function App() {

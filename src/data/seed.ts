@@ -28,6 +28,10 @@ const SEED: SeedSpec[] = [
   { username: 'rafa', totalXP: 1200, currentStreak: 1, longestStreak: 3, freezes: 0, weeklyMinutes: 90, badges: ['Novice'], bio: 'Day one (again).' },
 ];
 
+/** The user's one private Focus Circle (demoes the crew mechanic). */
+export const CIRCLE_NAME = 'Deep Work Crew';
+export const CIRCLE_IDS = ['u_me', 'u_priya', 'u_kenji', 'u_omar', 'u_sam', 'u_zoe'];
+
 function makeUser(spec: SeedSpec): User {
   return {
     id: `u_${spec.username}`,

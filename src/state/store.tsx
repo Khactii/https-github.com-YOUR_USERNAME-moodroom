@@ -12,7 +12,7 @@ import {
   type SessionResult,
   type User,
 } from '../engine';
-import { makeMe, seedFeed, seedMockUsers } from '../data/seed';
+import { CIRCLE_IDS, CIRCLE_NAME, makeMe, seedFeed, seedMockUsers } from '../data/seed';
 import { clearState, emptyState, loadState, saveState, type PersistedState } from '../storage/storage';
 
 export interface FinishSessionArgs {
@@ -32,6 +32,8 @@ interface StoreValue {
   users: User[];
   sessions: Session[];
   ranked: RankedUser[];
+  circleRanked: RankedUser[];
+  circleName: string;
   myRank: number | null;
   todayXP: number;
   // actions
@@ -82,6 +84,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const me = useMemo(() => state.users.find((u) => u.id === state.meId) ?? null, [state]);
   const ranked = useMemo(() => rankUsers(state.users), [state.users]);
+  const circleRanked = useMemo(
+    () => rankUsers(state.users.filter((u) => CIRCLE_IDS.includes(u.id))),
+    [state.users],
+  );
   const myRank = useMemo(() => (me ? rankOf(state.users, me.id) : null), [state.users, me]);
   const today = toLocalDateStr();
   const todayXP = state.daily[today]?.xp ?? 0;
@@ -165,6 +171,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     users: state.users,
     sessions: state.sessions,
     ranked,
+    circleRanked,
+    circleName: CIRCLE_NAME,
     myRank,
     todayXP,
     onboard,

@@ -4,4 +4,8 @@ export interface SessionConfig {
   plannedMin: number;
 }
 
-export type View = 'home' | 'active' | 'complete' | 'profile';
+/** Tabs in the persistent bottom nav. */
+export type Tab = 'home' | 'feed' | 'leaderboard' | 'profile';
+
+/** All app views: the tabs plus the full-screen session flow. */
+export type View = Tab | 'active' | 'complete';

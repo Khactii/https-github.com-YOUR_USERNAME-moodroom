@@ -41,8 +41,9 @@ src/
   storage/       # localStorage persistence boundary (swap for an API later)
   state/         # React store wiring engine + storage to the UI
   data/          # ~12 seeded mock users + feed so social feels alive day one
-  components/    # shared UI: cards, flame, integrity hook, count-up
-  screens/       # Onboarding, Home, ActiveSession, SessionComplete, Profile
+  components/    # shared UI: cards, flame, tab bar, integrity hook, count-up
+  screens/       # Onboarding, Home, ActiveSession, SessionComplete,
+                 #   Profile, Feed, Leaderboard
 ```
 
 ### The rules (see `src/engine/constants.ts`)
@@ -74,10 +75,14 @@ punishment for a lapse, reward the work — never merely opening the app.
 **Phase 1 (core loop) is complete:** Onboarding → Home → Active session (with
 integrity enforcement) → animated reward → Profile, full engine, persistence.
 
+**Phase 2 (social) is complete:** a persistent bottom tab nav (Home · Feed ·
+Leaderboard · Profile), the consistency-weighted weekly **Leaderboard** with
+Global / Circle tabs and the user's own row highlighted in accent, and the
+**Feed** of public sessions as social proof.
+
 Stubbed throughout (per spec): payments / Pro, real auth, real binaural audio,
-the Atlas AI coach, push notifications. Phases 2 (Leaderboard, Feed, tab nav)
-and 3 (Focus Circle, badges, story-card export, boss battle, paywall UI) are
-scoped but not yet built.
+the Atlas AI coach, push notifications. Phase 3 (Focus Circle, badges,
+story-card export, boss battle, paywall UI) is scoped but not yet built.
 
 ### Demo tips
 
