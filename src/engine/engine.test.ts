@@ -272,6 +272,40 @@ describe('applySession (orchestration / Phase 1 DoD)', () => {
     expect(frozen.user.freezes).toBe(0);
   });
 
+  it('a surprise 2x window doubles XP without touching base fairness', () => {
+    const me = makeUser();
+    const lucky = applySession(me, {
+      intention: 'x', vibe: 'Deep', plannedMin: 50, actualMin: 50, verified: true,
+      startedAt: '', endedAt: '', verifiedMinutesToday: 0, xpEarnedToday: 0, today: '2026-06-18',
+      delightRoll: 0, // below the chance threshold -> hits
+    });
+    expect(lucky.reward.doubleXP).toBe(true);
+    expect(lucky.reward.bonusXP).toBe(60); // base 60 (50 + 20%) doubled
+    expect(lucky.reward.xpEarned).toBe(120);
+    expect(lucky.user.totalXP).toBe(120);
+  });
+
+  it('no delight roll (or a high roll) leaves XP at the fair base', () => {
+    const me = makeUser();
+    const normal = applySession(me, {
+      intention: 'x', vibe: 'Deep', plannedMin: 50, actualMin: 50, verified: true,
+      startedAt: '', endedAt: '', verifiedMinutesToday: 0, xpEarnedToday: 0, today: '2026-06-18',
+      delightRoll: 0.99,
+    });
+    expect(normal.reward.doubleXP).toBe(false);
+    expect(normal.reward.xpEarned).toBe(60);
+  });
+
+  it('the 2x window never fires on an unverified session', () => {
+    const me = makeUser();
+    const res = applySession(me, {
+      intention: 'x', vibe: 'Deep', plannedMin: 50, actualMin: 50, verified: false,
+      startedAt: '', endedAt: '', verifiedMinutesToday: 0, xpEarnedToday: 0, today: '2026-06-18',
+      delightRoll: 0,
+    });
+    expect(res.reward.doubleXP).toBe(false);
+  });
+
   it('today defaults to local today when omitted', () => {
     const res = applySession(makeUser(), {
       intention: 'x', vibe: 'Deep', plannedMin: 25, actualMin: 25, verified: true,

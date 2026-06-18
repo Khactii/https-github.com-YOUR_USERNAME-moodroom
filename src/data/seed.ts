@@ -53,6 +53,11 @@ export function seedMockUsers(): User[] {
   return SEED.map(makeUser);
 }
 
+/** Plausible weekly minutes per mock user id, used to repopulate the board on a weekly reset. */
+export function seedWeeklyMinutesById(): Record<string, number> {
+  return Object.fromEntries(SEED.map((s) => [`u_${s.username}`, s.weeklyMinutes]));
+}
+
 export function makeMe(username: string): User {
   const clean = username.trim() || 'you';
   return {

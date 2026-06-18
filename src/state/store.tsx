@@ -6,13 +6,14 @@ import {
   evaluateDayBoundary,
   rankOf,
   rankUsers,
+  startOfWeek,
   toLocalDateStr,
   type RankedUser,
   type Session,
   type SessionResult,
   type User,
 } from '../engine';
-import { CIRCLE_IDS, CIRCLE_NAME, makeMe, seedFeed, seedMockUsers } from '../data/seed';
+import { CIRCLE_IDS, CIRCLE_NAME, makeMe, seedFeed, seedMockUsers, seedWeeklyMinutesById } from '../data/seed';
 import { clearState, emptyState, loadState, saveState, type PersistedState } from '../storage/storage';
 
 export interface FinishSessionArgs {
@@ -50,7 +51,7 @@ function bootstrap(): PersistedState {
   if (existing) return existing;
   const users = seedMockUsers();
   const sessions = seedFeed(users);
-  return { ...emptyState(), users, sessions };
+  return { ...emptyState(), users, sessions, weekStart: startOfWeek() };
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {
@@ -60,20 +61,33 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   });
   const [ready, setReady] = useState(false);
 
-  // On mount, evaluate the day boundary so a stale streak shows its true state.
+  // On mount: evaluate the day boundary (stale streaks) and the week boundary
+  // (the leaderboard resets Monday — zero my weekly minutes, repopulate the
+  // mock board so it isn't empty).
   useEffect(() => {
     setState((prev) => {
       if (!prev.meId) return prev;
       const today = toLocalDateStr();
+      const thisWeek = startOfWeek();
+      const weekRolled = !!prev.weekStart && prev.weekStart !== thisWeek;
+      const seedWeekly = weekRolled ? seedWeeklyMinutesById() : null;
+
       const users = prev.users.map((u) => {
-        if (u.id !== prev.meId) return u;
-        const ev = evaluateDayBoundary(
-          { currentStreak: u.currentStreak, longestStreak: u.longestStreak, freezes: u.freezes, lastSessionDate: u.lastSessionDate },
-          today,
-        );
-        return { ...u, currentStreak: ev.currentStreak, longestStreak: ev.longestStreak, freezes: ev.freezes };
+        let next = u;
+        if (u.id === prev.meId) {
+          const ev = evaluateDayBoundary(
+            { currentStreak: u.currentStreak, longestStreak: u.longestStreak, freezes: u.freezes, lastSessionDate: u.lastSessionDate },
+            today,
+          );
+          next = { ...next, currentStreak: ev.currentStreak, longestStreak: ev.longestStreak, freezes: ev.freezes };
+        }
+        if (weekRolled) {
+          next = { ...next, weeklyMinutes: u.id === prev.meId ? 0 : seedWeekly![u.id] ?? 0 };
+        }
+        return next;
       });
-      return { ...prev, users };
+
+      return { ...prev, users, weekStart: thisWeek };
     });
     setReady(true);
   }, []);
@@ -119,6 +133,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         verifiedMinutesToday: dailyToday.verifiedMinutes,
         xpEarnedToday: dailyToday.xp,
         today,
+        delightRoll: Math.random(),
       });
 
       const after = before.map((u) => (u.id === meId ? result.user : u));
@@ -126,19 +141,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       rankBefore = delta.before;
       rankAfter = delta.after;
 
-      const newDaily = {
-        ...prev.daily,
-        [today]: {
-          xp: dailyToday.xp + result.reward.xpEarned,
-          verifiedMinutes: dailyToday.verifiedMinutes + (args.verified ? args.actualMin : 0),
-        },
+      // The daily cap tracks BASE (fair) XP only — the surprise bonus is upside
+      // that never eats into tomorrow's earnable credit.
+      const baseXP = result.reward.xpEarned - result.reward.bonusXP;
+      const cutoff = addDays(today, -14);
+      const daily: typeof prev.daily = {};
+      for (const [day, v] of Object.entries(prev.daily)) {
+        if (day >= cutoff) daily[day] = v;
+      }
+      daily[today] = {
+        xp: dailyToday.xp + baseXP,
+        verifiedMinutes: dailyToday.verifiedMinutes + (args.verified ? args.actualMin : 0),
       };
 
       return {
         ...prev,
         users: after,
         sessions: [result.session, ...prev.sessions],
-        daily: newDaily,
+        daily,
       };
     });
 

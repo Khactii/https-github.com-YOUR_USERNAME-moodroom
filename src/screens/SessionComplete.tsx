@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowUp, Check, Flame, Snowflake, TriangleAlert, TrendingUp } from 'lucide-react';
+import { ArrowUp, Check, Flame, Snowflake, TriangleAlert, TrendingUp, Zap } from 'lucide-react';
 import { Button, Card, Kicker } from '../components/ui';
 import { useCountUp } from '../components/useCountUp';
 import type { SessionResult } from '../engine';
@@ -45,7 +45,11 @@ export function SessionComplete({ result, onDone }: { result: RewardResult; onDo
     <div className="flex min-h-full flex-col p-6 pb-8">
       {/* Hero XP */}
       <div className="flex flex-1 flex-col items-center justify-center text-center">
-        {verified ? (
+        {reward.doubleXP ? (
+          <div className="kicker mb-4 inline-flex items-center gap-2 rounded-full border border-acc bg-acc-soft px-3 py-1.5 text-acc animate-pop">
+            <Zap size={13} fill="var(--acc)" /> Surprise · 2× XP window
+          </div>
+        ) : verified ? (
           <div className="kicker mb-4 inline-flex items-center gap-2 rounded-full border border-line bg-surf px-3 py-1.5 text-acc">
             <Check size={13} strokeWidth={3} /> Verified · phone-free
           </div>
@@ -57,13 +61,14 @@ export function SessionComplete({ result, onDone }: { result: RewardResult; onDo
 
         <div className="animate-pop">
           <div className={`stat-num text-[88px] leading-none ${verified ? 'text-acc' : 'text-mut'}`}>+{xp}</div>
-          <div className="kicker mt-1 text-faint">XP earned</div>
+          <div className="kicker mt-1 text-faint">{reward.doubleXP ? 'XP earned · doubled!' : 'XP earned'}</div>
         </div>
 
         <p className="mt-5 max-w-[300px] text-[15px] leading-relaxed text-mut">
           {verified ? (
             <>
               {reward.completionBonusApplied && <span className="text-cream">+20% completion bonus. </span>}
+              {reward.doubleXP && <span className="text-acc">A 2× window hit (+{reward.bonusXP} bonus). </span>}
               You locked in. {result.session.actualMin} minutes of committed, phone-free time.
             </>
           ) : (

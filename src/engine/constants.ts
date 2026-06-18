@@ -26,6 +26,11 @@ export const MAX_FREEZES = 1; // max banked freezes
 // weeklyScore = verifiedMinutesThisWeek + (currentStreak * STREAK_MINUTE_VALUE)
 export const STREAK_MINUTE_VALUE = 60; // a day of streak ~= an hour of work
 
+// ---- Variable delight (fixed fairness) ----
+// Surprise upside only — honest work ALWAYS earns its deterministic base credit.
+// This bonus is rare, additive, and never decides whether work counts.
+export const DELIGHT_2X_CHANCE = 0.12; // ~1 in 8 verified sessions triggers a 2x window
+
 // ---- Levels ----
 export const LEVEL_THRESHOLDS_BASE: Record<Level, number> = {
   Novice: 0,

@@ -11,13 +11,15 @@ export interface PersistedState {
   sessions: Session[];
   /** XP earned today, keyed by 'YYYY-MM-DD', for the daily cap & diminishing returns. */
   daily: Record<string, { xp: number; verifiedMinutes: number }>;
+  /** Monday (local) of the tracked leaderboard week; weeklyMinutes reset when it changes. */
+  weekStart: string;
 }
 
-const KEY = 'werc.state.v1';
-const VERSION = 1;
+const KEY = 'werc.state.v2';
+const VERSION = 2;
 
 export function emptyState(): PersistedState {
-  return { version: VERSION, meId: null, users: [], sessions: [], daily: {} };
+  return { version: VERSION, meId: null, users: [], sessions: [], daily: {}, weekStart: '' };
 }
 
 export function loadState(): PersistedState | null {

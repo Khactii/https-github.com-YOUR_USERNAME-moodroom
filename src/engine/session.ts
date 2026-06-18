@@ -1,4 +1,4 @@
-import { MIN_SESSION_MIN } from './constants';
+import { DELIGHT_2X_CHANCE, MIN_SESSION_MIN } from './constants';
 import { toLocalDateStr } from './dates';
 import { levelForXP, levelProgress, type LevelProgress } from './level';
 import { rankOf } from './leaderboard';
@@ -19,6 +19,12 @@ export interface SessionInput {
   verifiedMinutesToday: number;
   xpEarnedToday: number;
   today?: string; // 'YYYY-MM-DD' (defaults to local today; injectable for tests/sim)
+  /**
+   * Random roll in [0,1) for the surprise 2x-XP delight window. Inject Math.random
+   * from the UI; omit (or pass >= DELIGHT_2X_CHANCE) for deterministic, no-bonus
+   * behaviour in tests. The bonus is upside-only and never gates honest credit.
+   */
+  delightRoll?: number;
 }
 
 export interface SessionResult {
@@ -30,6 +36,9 @@ export interface SessionResult {
     xpAfter: number;
     capped: boolean;
     completionBonusApplied: boolean;
+    /** A surprise 2x-XP window hit — pure delight on top of fair base credit. */
+    doubleXP: boolean;
+    bonusXP: number;
     verified: boolean;
     countsTowardStreak: boolean;
     levelBefore: Level;
@@ -59,8 +68,15 @@ export function applySession(user: User, input: SessionInput): SessionResult {
     xpEarnedToday: input.xpEarnedToday,
   });
 
+  // Surprise 2x window: rare, additive delight that respects the deterministic
+  // base. It only ever adds XP on top of work that already earned its fair credit.
+  const baseXP = xpResult.xp;
+  const doubleXP = input.verified && baseXP > 0 && (input.delightRoll ?? 1) < DELIGHT_2X_CHANCE;
+  const bonusXP = doubleXP ? baseXP : 0;
+  const totalEarned = baseXP + bonusXP;
+
   const xpBefore = user.totalXP;
-  const xpAfter = xpBefore + xpResult.xp;
+  const xpAfter = xpBefore + totalEarned;
   const levelBefore = user.level;
   const levelAfter = levelForXP(xpAfter);
   const progressBefore = levelProgress(xpBefore);
@@ -111,18 +127,20 @@ export function applySession(user: User, input: SessionInput): SessionResult {
     endedAt: input.endedAt,
     verified: input.verified,
     voided: !input.verified,
-    xpEarned: xpResult.xp,
+    xpEarned: totalEarned,
   };
 
   return {
     user: nextUser,
     session,
     reward: {
-      xpEarned: xpResult.xp,
+      xpEarned: totalEarned,
       xpBefore,
       xpAfter,
       capped: xpResult.capped,
       completionBonusApplied: xpResult.completionBonusApplied,
+      doubleXP,
+      bonusXP,
       verified: input.verified,
       countsTowardStreak: qualifies,
       levelBefore,
